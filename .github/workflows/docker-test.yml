@@ -13,10 +13,12 @@ jobs:
     steps:
     - name: checkout repo
       uses: actions/checkout@v2
+      with:
+          submodules: 'true'
 
     - name: build and test 
       run: |
           docker build -t hashmap-test .
-          docker run hashmap-test "./app/test_hashmap_prog"
+          docker run hashmap-test "/app/test_hashmap_prog"
 
 
