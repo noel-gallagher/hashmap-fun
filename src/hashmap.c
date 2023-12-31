@@ -6,7 +6,6 @@ KeyValuePair *createKeyValuePair() {
     KeyValuePair *kvp = malloc(sizeof(KeyValuePair));
     kvp->key = NULL;
     kvp->value = 0;
-    kvp->next = NULL;
     return kvp;
 }
 
@@ -14,7 +13,6 @@ KeyValuePair* createKeyValuePairWithValues(const char* key, int value) {
     KeyValuePair *kvp = malloc(sizeof(KeyValuePair));
     kvp->key = strdup(key);
     kvp->value = value;
-    kvp->next = NULL;
     return kvp;
 }
 
@@ -61,30 +59,29 @@ int hash(const char *key) {
 
 void put(HashMap *map, const char *key, int value) {
     int index = hash(key); 
-    //collision
     KeyValuePair* kvp = createKeyValuePairWithValues(key, value);
     if(map->buckets[index] == NULL) {
         map->buckets[index] = kvp;
     }
+    //collision
     else {
-        KeyValuePair* current = map->buckets[index];
-        while(current->next){
-           current = current->next; 
+        while(map->buckets[index] != NULL) {
+            index++;
+            //fixme resize logic
         }
-        current->next = kvp;
+        map->buckets[index] = kvp;
     }
-    
 }
 
 int get(const HashMap *map, const char *key) {
     int index = hash(key);
     KeyValuePair* current = map->buckets[index];
-    KeyValuePair* next = current;
-    while(next && strcmp(current->key, key) != 0) {
-        current = next;
-        next = next->next;
+    while(current != NULL && strcmp(current->key, key) != 0) {
+        current = map->buckets[index++];
     }
-    int value = current->value;
-    return value;
+    if(current == NULL)
+        return -1;
+
+    return current->value;
 }
 
