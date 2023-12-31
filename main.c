@@ -1,13 +1,8 @@
 #include <stdio.h>
 #include "hashmap.h"
 
-int dummy_hash_function(const char* input)
-{
-    return 256;
-}
-
 int main() {
-    HashMap *myMap = createHashMap(NULL);
+    HashMap *myMap = createHashMap(HASHMAP_SIZE, NULL);
 
     put(myMap, "key1", 100);
     put(myMap, "key2", 200);
