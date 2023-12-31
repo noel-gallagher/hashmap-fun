@@ -62,22 +62,27 @@ void put(HashMap *map, const char *key, int value) {
     KeyValuePair* kvp = createKeyValuePairWithValues(key, value);
     if(map->buckets[index] == NULL) {
         map->buckets[index] = kvp;
+        return;
     }
     //collision
     else {
-        while(map->buckets[index] != NULL) {
-            index++;
+        int startIndex = index;
+        startIndex++;
+        while(startIndex != index && map->buckets[startIndex] != NULL) {
+            startIndex = (startIndex + 1 % HASHMAP_SIZE);
             //fixme resize logic
         }
-        map->buckets[index] = kvp;
+        map->buckets[startIndex] = kvp;
     }
 }
 
 int get(const HashMap *map, const char *key) {
     int index = hash(key);
+    int startIndex = index + 1;
     KeyValuePair* current = map->buckets[index];
-    while(current != NULL && strcmp(current->key, key) != 0) {
-        current = map->buckets[index++];
+    while(startIndex != index && current != NULL && strcmp(current->key, key) != 0) {
+        current = map->buckets[startIndex];
+        startIndex = (startIndex + 1) % HASHMAP_SIZE;
     }
     if(current == NULL)
         return -1;
