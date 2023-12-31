@@ -5,6 +5,7 @@
 
 #define HASHMAP_SIZE 256
 
+typedef int (*HashFunction)(const char* key);
 
 typedef struct KeyValuePair {
 	char *key;
@@ -13,8 +14,9 @@ typedef struct KeyValuePair {
 } KeyValuePair;
 
 typedef struct {
-   KeyValuePair *buckets[HASHMAP_SIZE]; 
-}  HashMap;
+    HashFunction hashfunction; 
+    KeyValuePair *buckets[HASHMAP_SIZE]; 
+} HashMap;
 
 HashMap* createHashMap();
 void freeHashMap(HashMap *hmap);
@@ -23,3 +25,4 @@ void put(HashMap *map, const char *key, int value);
 int get(const HashMap *map, const char *key);
 
 #endif
+

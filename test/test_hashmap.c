@@ -6,13 +6,13 @@ void setUp(void) {}
 void tearDown(void) {}
 
 void test_createHashMap(void) {
-    HashMap *map = createHashMap();
+    HashMap *map = createHashMap(NULL);
     TEST_ASSERT_NOT_NULL(map);
     freeHashMap(map);
 }
 
 void test_putAndGet(void) {
-    HashMap *map = createHashMap();
+    HashMap *map = createHashMap(NULL);
     put(map, "testKey", 123);
 
     int value = get(map, "testKey");
@@ -22,7 +22,7 @@ void test_putAndGet(void) {
 }
 
 void test_putAndGetWithCollision(void) {
-    HashMap *map = createHashMap();
+    HashMap *map = createHashMap(NULL);
     put(map, "AB", 123);
     put(map, "BA", 456);
 
@@ -33,10 +33,27 @@ void test_putAndGetWithCollision(void) {
 
     freeHashMap(map);
 }
+
+int dummy_hash_function(const char* input) {
+    return 256;
+}
+
+void test_overflow(void) {
+    HashMap *map = createHashMap(dummy_hash_function);
+    put(map, "testKey", 123);
+
+    int value = map->buckets[0]->value;
+    TEST_ASSERT_EQUAL_INT(123, value);
+
+    freeHashMap(map);
+}
+
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_createHashMap);
     RUN_TEST(test_putAndGet);
     RUN_TEST(test_putAndGetWithCollision);
+    RUN_TEST(test_overflow);
     return UNITY_END();
 }
