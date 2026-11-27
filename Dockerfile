@@ -1,11 +1,11 @@
-FROM ubuntu:latest
+FROM alpine:latest
 WORKDIR /app
 
-RUN apt update && apt install -y \
-    build-essential \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache build-base git
 
-COPY . /app
+COPY Makefile main.c ./
+COPY src/*.c src/*.h ./src/
+COPY test/*.c ./test/
+COPY externals/unity/src/*.c externals/unity/src/*.h ./externals/unity/src/
 
-RUN make -C /app
+RUN make

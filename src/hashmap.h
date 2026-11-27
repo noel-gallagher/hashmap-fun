@@ -20,7 +20,7 @@ typedef struct {
     KeyValuePair **buckets; 
 } HashMap;
 
-HashMap* createHashMap();
+HashMap* createHashMap(size_t hashmap_size, HashFunction hashfunction);
 void freeHashMap(HashMap *hmap);
 int hash(const char *key, size_t hashmap_size);
 void put(HashMap *map, const char *key, void* value, size_t size);
