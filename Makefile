@@ -22,7 +22,7 @@ TEST_PROG=test_hashmap_prog
 
 .PHONY: all clean debug test release library
 
-all: debug test release
+all: debug $(TEST_PROG) release
 
 debug: CFLAGS += $(DEBUGFLAGS)
 debug: $(PROG)_debug
@@ -30,7 +30,8 @@ debug: $(PROG)_debug
 $(PROG)_debug: $(LIB_NAME) $(MAIN_OBJ)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $(MAIN_OBJ) $(LIB_NAME)
 
-test:$(TEST_PROG)
+test: $(TEST_PROG)
+	./$(TEST_PROG)
 
 $(TEST_PROG): $(UNITY_OBJ) $(LIB_OBJ) $(TEST_OBJ)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^

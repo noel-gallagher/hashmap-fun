@@ -64,36 +64,70 @@ int hash(const char *key, size_t hashmap_size) {
     return sum % hashmap_size;
 }
 
+static size_t homeBucket(const HashMap *map, const char *key) {
+    size_t capacity = map->hashmap_size;
+    return capacity == 0 ? 0 : (size_t)map->hashfunction(key, capacity) % capacity;
+}
+
 void put(HashMap *map, const char *key, void *value, size_t size) {
-    int index = map->hashfunction(key, map->hashmap_size); 
-    KeyValuePair* kvp = createKeyValuePairWithValues(key, value, size);
-    for(size_t i = 0; i < map->hashmap_size; i++) 
-    {
-        int startIndex = (index + i) % map->hashmap_size;
-        if(map->buckets[startIndex] == NULL ) 
-        {
-            map->buckets[startIndex] = kvp;
+    size_t capacity = map->hashmap_size;
+    size_t index = homeBucket(map, key);
+    for (size_t scanned = 0; scanned < capacity; scanned++) {
+        if (map->buckets[index] == NULL) {
+            map->buckets[index] = createKeyValuePairWithValues(key, value, size);
             return;
         }
+        index = (index + 1) % capacity;
     }
+}
+
+static size_t findBucket(const HashMap *map, const char *key) {
+    size_t capacity = map->hashmap_size;
+    size_t index = homeBucket(map, key);
+    for (size_t scanned = 0; scanned < capacity; scanned++) {
+        KeyValuePair *entry = map->buckets[index];
+        if (entry == NULL) {
+            break;
+        }
+        if (entry->key != NULL && strcmp(entry->key, key) == 0) {
+            return index;
+        }
+        index = (index + 1) % capacity;
+    }
+    return capacity;
 }
 
 void* get(const HashMap *map, const char *key) {
-    int index = map->hashfunction(key, map->hashmap_size);
-    for(size_t i = 0; i < map->hashmap_size; i++) 
-    {
-        int currentIndex = (index + i) % map->hashmap_size;
-        KeyValuePair* current = map->buckets[currentIndex];
-        if(current == NULL)
-        {
-            return NULL;
-        }
-        if(current->key != NULL && strcmp(current->key, key) == 0)
-        {
-            return current->value;   
-        }
-    }
-
-    return NULL;
+    size_t index = findBucket(map, key);
+    return index == map->hashmap_size ? NULL : map->buckets[index]->value;
 }
 
+static size_t probeDistance(size_t home, size_t index, size_t capacity) {
+    return index >= home ? index - home : capacity - (home - index);
+}
+
+bool deleteKey(HashMap *map, const char *key) {
+    size_t capacity = map->hashmap_size;
+    size_t hole = findBucket(map, key);
+    if (hole == capacity) {
+        return false;
+    }
+
+    freeKeyValuePair(map->buckets[hole]);
+    map->buckets[hole] = NULL;
+
+    size_t index = (hole + 1) % capacity;
+    for (size_t scanned = 1; scanned < capacity && map->buckets[index] != NULL; scanned++) {
+        KeyValuePair *entry = map->buckets[index];
+        size_t home = homeBucket(map, entry->key);
+
+        if (probeDistance(home, hole, capacity) < probeDistance(home, index, capacity)) {
+            map->buckets[hole] = entry;
+            map->buckets[index] = NULL;
+            hole = index;
+        }
+        index = (index + 1) % capacity;
+    }
+
+    return true;
+}
